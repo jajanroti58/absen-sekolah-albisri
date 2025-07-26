@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Wajah - Ponpes Al Ikhlas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .page { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 24px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .tab-button.active {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            border-color: #16a34a;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Login Page -->
+    <div id="login-page" class="page active">
+        <div class="flex items-center justify-center min-h-screen bg-gray-200">
+            <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+                <div class="text-center">
+                    <img src="https://placehold.co/100x100/28a745/ffffff?text=AI" alt="Logo Ponpes" class="mx-auto mb-4 rounded-full">
+                    <h1 class="text-2xl font-bold text-gray-800">Sistem Absensi Wajah</h1>
+                    <p class="text-gray-600">Pondok Pesantren Al Ikhlas Firqoh Al Bisri</p>
+                </div>
+                <form id="login-form" class="space-y-4">
+                    <div><label for="username" class="text-sm font-medium text-gray-700">Username</label><input type="text" id="username" value="admin123" required class="w-full px-4 py-2 mt-1 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></div>
+                    <div><label for="password" class="text-sm font-medium text-gray-700">Password</label><input type="password" id="password" value="12345" required class="w-full px-4 py-2 mt-1 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></div>
+                    <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Masuk</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Wrapper -->
+    <div id="app-wrapper" class="hidden">
+        <div class="flex h-screen bg-gray-100">
+            <!-- Sidebar -->
+            <aside class="w-64 bg-gray-800 text-white flex flex-col">
+                <div class="h-20 flex items-center justify-center border-b border-gray-700"><h1 class="text-xl font-bold">Ponpes Al Ikhlas</h1></div>
+                <nav id="main-nav" class="flex-1 px-4 py-4 space-y-2">
+                    <a href="#dashboard" class="nav-link flex items-center px-4 py-2 rounded-lg bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>Dashboard</a>
+                    <a href="#kamera" class="nav-link flex items-center px-4 py-2 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>Kamera Absensi</a>
+                    <a href="#data-santri" class="nav-link flex items-center px-4 py-2 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.28-1.25-1.457-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.28-1.25 1.457-1.857M12 12a3 3 0 100-6 3 3 0 000 6z"></path></svg>Data Santri</a>
+                    <a href="#rekapan" class="nav-link flex items-center px-4 py-2 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Rekapan Absen</a>
+                    <a href="#pengaturan" class="nav-link flex items-center px-4 py-2 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>Pengaturan</a>
+                </nav>
+                <div class="px-4 py-4 border-t border-gray-700"><a href="#" id="logout-btn" class="flex items-center px-4 py-2 rounded-lg hover:bg-red-500"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>Keluar</a></div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 p-6 overflow-y-auto">
+                <!-- Dashboard Page Content -->
+                <div id="dashboard-page" class="content-page active">
+                    <h2 class="text-3xl font-bold text-gray-800">Dashboard</h2>
+                    <p id="tanggal-hari-ini" class="text-gray-600 mt-1 mb-6">Memuat tanggal...</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md flex items-center"><div class="bg-blue-500 p-3 rounded-full text-white mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.28-1.25-1.457-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.28-1.25 1.457-1.857M12 12a3 3 0 100-6 3 3 0 000 6z"></path></svg></div><div><p class="text-sm text-gray-500">Jumlah Santri</p><p id="stat-total-santri" class="text-2xl font-bold text-gray-800">0</p></div></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md flex items-center"><div class="bg-green-500 p-3 rounded-full text-white mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><div><p class="text-sm text-gray-500">Sudah Absen</p><p id="stat-sudah-absen" class="text-2xl font-bold text-gray-800">0</p></div></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md flex items-center"><div class="bg-yellow-500 p-3 rounded-full text-white mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><div><p class="text-sm text-gray-500">Terlambat</p><p id="stat-terlambat" class="text-2xl font-bold text-gray-800">0</p></div></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md flex items-center"><div class="bg-red-500 p-3 rounded-full text-white mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg></div><div><p class="text-sm text-gray-500">Tidak Hadir</p><p id="stat-tidak-hadir" class="text-2xl font-bold text-gray-800">0</p></div></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md"><h3 class="text-xl font-semibold text-gray-800 mb-4">Data Masuk Hari Ini</h3><div id="list-data-masuk-hari-ini" class="space-y-3 h-64 overflow-y-auto"><p class="placeholder-text text-gray-500 text-center pt-8">Belum ada data absensi masuk.</p></div></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md"><h3 class="text-xl font-semibold text-gray-800 mb-4">Data Pulang Hari Ini</h3><div id="list-data-pulang-hari-ini" class="space-y-3 h-64 overflow-y-auto"><p class="placeholder-text text-gray-500 text-center pt-8">Belum ada data absensi pulang.</p></div></div>
+                    </div>
+                </div>
+
+                <!-- Kamera Page Content -->
+                <div id="kamera-page" class="content-page hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-3xl font-bold text-gray-800">Kamera Absensi</h2>
+                        <div id="live-clock" class="text-lg font-semibold text-gray-700 bg-white px-4 py-2 rounded-lg shadow-md"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="mb-4"><nav class="flex space-x-2" aria-label="Tabs">
+                            <button id="tab-masuk" class="tab-button flex-1 px-3 py-2 font-medium rounded-md active">Absen Masuk</button>
+                            <button id="tab-pulang" class="tab-button flex-1 px-3 py-2 font-medium rounded-md bg-gray-200 text-gray-600 hover:bg-gray-300">Absen Pulang</button>
+                        </nav></div>
+                        
+                        <div id="jadwal-display" class="text-center mb-4 p-2 bg-gray-100 rounded-md">
+                            <p class="text-sm text-gray-700">Jadwal Tepat Waktu: <strong id="jadwal-masuk-text">00:00 - 00:00</strong> | Toleransi Terlambat Hingga: <strong id="jadwal-masuk-terlambat-text">00:00</strong></p>
+                            <p class="text-sm text-gray-700">Jadwal Pulang: <strong id="jadwal-pulang-text">00:00 - 00:00</strong> | Toleransi Terlambat Hingga: <strong id="jadwal-pulang-terlambat-text">00:00</strong></p>
+                        </div>
+                        
+                        <div class="bg-gray-800 p-4 rounded-t-lg text-center">
+                            <h3 id="pintu-title" class="text-2xl font-bold text-white tracking-wider">PINTU MASUK</h3>
+                        </div>
+                        <div class="flex flex-col items-center gap-4 bg-gray-200 p-4 rounded-b-lg">
+                            <div class="w-[360px] h-[480px] bg-black rounded-lg overflow-hidden shadow-inner border-4 border-gray-400">
+                                <video id="kamera-absen" class="w-full h-full object-cover" autoplay playsinline></video>
+                            </div>
+                            <div id="status-absen" class="p-4 bg-white rounded-lg w-full text-center shadow-md">
+                                <h4 class="font-bold">Status:</h4>
+                                <p id="status-text">Mengaktifkan kamera...</p>
+                            </div>
+                            <div id="manual-override-container" class="w-full hidden">
+                                <button id="btn-manual-override" class="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Test Kamera (Manual)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Santri Page Content -->
+                <div id="data-santri-page" class="content-page hidden">
+                    <div class="flex justify-between items-center mb-6"><h2 class="text-3xl font-bold text-gray-800">Data Santri</h2><button id="btn-tambah-santri" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">+ Tambah Santri Baru</button></div>
+                    <div class="bg-white p-6 rounded-lg shadow-md"><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">Nama</th><th scope="col" class="px-6 py-3">Alamat</th><th scope="col" class="px-6 py-3">Jenjang</th><th scope="col" class="px-6 py-3">Kelas</th><th scope="col" class="px-6 py-3">Wajah Direkam</th><th scope="col" class="px-6 py-3">Tindakan</th></tr></thead><tbody id="tabel-data-santri"><tr id="placeholder-data-santri"><td colspan="6" class="text-center py-10 text-gray-500">Belum ada data santri.</td></tr></tbody></table></div></div>
+                </div>
+
+                <!-- Rekapan Page Content -->
+                <div id="rekapan-page" class="content-page hidden">
+                     <div class="flex justify-between items-center mb-6"><h2 class="text-3xl font-bold text-gray-800">Rekapan Absensi</h2><button id="btn-export-word" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Export ke Word</button></div>
+                     <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Rekap Absen Masuk</h3>
+                            <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">Nama Santri</th><th class="px-6 py-3">Tanggal</th><th class="px-6 py-3">Jam Masuk</th><th class="px-6 py-3">Status</th><th class="px-6 py-3">Keterangan</th></tr></thead><tbody id="tabel-rekapan-masuk"><tr class="placeholder-rekapan"><td colspan="5" class="text-center py-10 text-gray-500">Belum ada data rekapan.</td></tr></tbody></table></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Rekap Absen Pulang</h3>
+                            <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">Nama Santri</th><th class="px-6 py-3">Tanggal</th><th class="px-6 py-3">Jam Pulang</th><th class="px-6 py-3">Status</th></tr></thead><tbody id="tabel-rekapan-pulang"><tr class="placeholder-rekapan"><td colspan="4" class="text-center py-10 text-gray-500">Belum ada data rekapan.</td></tr></tbody></table></div>
+                        </div>
+                     </div>
+                </div>
+
+                <!-- Pengaturan Page Content -->
+                <div id="pengaturan-page" class="content-page hidden">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6">Pengaturan</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4">Ganti Akun & Password</h3>
+                            <form id="pengaturan-akun-form" class="space-y-4">
+                                <div><label class="text-sm font-medium">Username</label><input type="text" id="setting-username" required class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <div><label class="text-sm font-medium">Password Lama</label><input type="password" id="setting-old-password" placeholder="Masukkan password lama" required class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <div><label class="text-sm font-medium">Password Baru</label><input type="password" id="setting-new-password" placeholder="Kosongkan jika tidak ingin ganti" class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Simpan Perubahan</button>
+                            </form>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4">Edit Jadwal Absensi</h3>
+                             <form id="pengaturan-jadwal-form" class="space-y-4">
+                                <div><label class="text-sm font-medium">Jam Masuk (Mulai)</label><input type="time" id="setting-masuk-start" class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <div><label class="text-sm font-medium">Batas Akhir Tepat Waktu (Masuk)</label><input type="time" id="setting-masuk-end" class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <div><label class="text-sm font-medium">Batas Akhir Toleransi Terlambat (Masuk)</label><input type="time" id="setting-masuk-late-end" class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <div class="mt-4"><label class="text-sm font-medium">Jam Pulang (Mulai)</label><input type="time" id="setting-pulang-start" class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <div><label class="text-sm font-medium">Batas Akhir Tepat Waktu (Pulang)</label><input type="time" id="setting-pulang-end" class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <div><label class="text-sm font-medium">Batas Akhir Toleransi Terlambat (Pulang)</label><input type="time" id="setting-pulang-late-end" class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                                <div class="pt-4"><button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Simpan Jadwal</button></div>
+                            </form>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                            <h3 class="text-xl font-semibold mb-4">Edit Ucapan Suara</h3>
+                            <form id="pengaturan-suara-form" class="space-y-4">
+                                <p class="text-sm text-gray-500 -mt-2">Gunakan placeholder <code>{nama}</code> untuk menyisipkan nama santri secara otomatis.</p>
+                                <div>
+                                    <label class="text-sm font-medium">Absen Masuk (Tepat Waktu)</label>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-3 py-2 bg-gray-200 text-gray-600 rounded-l-lg">{nama}</span>
+                                        <input type="text" id="setting-suara-tepat-waktu" class="w-full px-4 py-2 bg-gray-100 border rounded-r-lg">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium">Absen Masuk (Terlambat)</label>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-3 py-2 bg-gray-200 text-gray-600 rounded-l-lg">{nama}</span>
+                                        <input type="text" id="setting-suara-terlambat" class="w-full px-4 py-2 bg-gray-100 border rounded-r-lg">
+                                    </div>
+                                </div>
+                                 <div>
+                                    <label class="text-sm font-medium">Absen Pulang (Tepat Waktu)</label>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-3 py-2 bg-gray-200 text-gray-600 rounded-l-lg">{nama}</span>
+                                        <input type="text" id="setting-suara-pulang" class="w-full px-4 py-2 bg-gray-100 border rounded-r-lg">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium">Absen Pulang (Terlambat)</label>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-3 py-2 bg-gray-200 text-gray-600 rounded-l-lg">{nama}</span>
+                                        <input type="text" id="setting-suara-pulang-telat" class="w-full px-4 py-2 bg-gray-100 border rounded-r-lg">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium">Santri Sudah Absen</label>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-3 py-2 bg-gray-200 text-gray-600 rounded-l-lg">{nama}</span>
+                                        <input type="text" id="setting-suara-sudah-absen" class="w-full px-4 py-2 bg-gray-100 border rounded-r-lg">
+                                    </div>
+                                </div>
+                                 <div>
+                                    <label class="text-sm font-medium">Dianggap Alpa (Lewat Toleransi)</label>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-3 py-2 bg-gray-200 text-gray-600 rounded-l-lg">{nama}</span>
+                                        <input type="text" id="setting-suara-alpa" class="w-full px-4 py-2 bg-gray-100 border rounded-r-lg">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium">Wajah Gagal Dikenali</label>
+                                    <input type="text" id="setting-suara-gagal" class="w-full px-4 py-2 mt-1 bg-gray-100 border rounded-lg">
+                                </div>
+                                <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Simpan Ucapan</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Santri -->
+    <div id="santri-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="view-form-santri">
+                <h3 id="modal-title" class="text-xl font-bold mb-4">Tambah Santri Baru</h3>
+                <form id="santri-form" class="space-y-3">
+                    <input type="hidden" id="santri-id">
+                    <div><label class="text-sm">Nama Lengkap</label><input type="text" id="santri-nama" required class="w-full px-3 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                    <div><label class="text-sm">Alamat</label><input type="text" id="santri-alamat" required class="w-full px-3 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                    <div><label class="text-sm">Jenjang</label><select id="santri-jenjang" required class="w-full px-3 py-2 mt-1 bg-gray-100 border rounded-lg"><option value="MI">MI</option><option value="MTS">MTS</option><option value="MA">MA</option></select></div>
+                    <div><label class="text-sm">Kelas</label><input type="text" id="santri-kelas" required class="w-full px-3 py-2 mt-1 bg-gray-100 border rounded-lg"></div>
+                    <div class="flex justify-end space-x-3 pt-4"><button type="button" id="btn-batal" class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Batal</button><button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Lanjut Rekam Wajah</button></div>
+                </form>
+            </div>
+            <div id="view-rekam-wajah" class="hidden text-center">
+                <h3 class="text-xl font-bold mb-2">Rekam Wajah Santri</h3>
+                <p id="rekam-nama-santri" class="mb-4 text-gray-600"></p>
+                <div class="w-64 h-80 bg-black rounded-lg overflow-hidden shadow-inner mx-auto mb-4"><video id="kamera-rekam" class="w-full h-full object-cover" autoplay playsinline></video></div>
+                <button id="btn-capture-wajah" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Ambil Gambar & Simpan Wajah</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Generic Info/Confirm Modal -->
+    <div id="info-modal" class="modal-overlay">
+        <div class="modal-content text-center">
+            <p id="info-modal-text" class="mb-4"></p>
+            <div id="info-modal-buttons">
+                <button id="info-modal-close" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- STATE MANAGEMENT (DATABASE SIMULATION) ---
+        let auth = { username: 'admin123', password: '12345' };
+        let santriData = [];
+        let absensiData = [];
+        let tempSantri = {};
+        let absensiInterval;
+        let clockInterval;
+        let JADWAL_ABSEN = {
+            masuk: { start: { h: 6, m: 30 }, end: { h: 7, m: 30 }, late_end: { h: 8, m: 0 } },
+            pulang: { start: { h: 15, m: 0 }, end: { h: 16, m: 0 }, late_end: { h: 16, m: 30 } }
+        };
+        let UCAPAN_SUARA = {
+            tepatWaktu: "tepat waktu.",
+            terlambat: "kamu telat, segera menghadap ke waka kesiswaan.",
+            pulang: "Terima kasih, selamat jalan.",
+            pulangTelat: "kamu terlambat pulang.",
+            sudahAbsen: "kamu sudah melakukan absensi.",
+            gagal: "Wajah tidak dikenali, silakan coba lagi.",
+            alpa: "kamu dianggap alpa dan akan dihukum oleh keamanan setelah jam sekolah selesai."
+        };
+        let availableVoices = [];
+        let selectedVoice = null;
+
+        // --- ELEMENT SELECTORS ---
+        const loginForm = document.getElementById('login-form');
+        const loginPage = document.getElementById('login-page');
+        const appWrapper = document.getElementById('app-wrapper');
+        const logoutBtn = document.getElementById('logout-btn');
+        const mainNav = document.getElementById('main-nav');
+        const contentPages = document.querySelectorAll('.content-page');
+        const kameraAbsen = document.getElementById('kamera-absen');
+        const kameraRekam = document.getElementById('kamera-rekam');
+        const tabMasuk = document.getElementById('tab-masuk');
+        const tabPulang = document.getElementById('tab-pulang');
+        const pintuTitle = document.getElementById('pintu-title');
+        
+        // Modals
+        const santriModal = document.getElementById('santri-modal');
+        const santriForm = document.getElementById('santri-form');
+        const infoModal = document.getElementById('info-modal');
+        const viewFormSantri = document.getElementById('view-form-santri');
+        const viewRekamWajah = document.getElementById('view-rekam-wajah');
+
+        // Buttons
+        const btnTambahSantri = document.getElementById('btn-tambah-santri');
+        const btnBatal = document.getElementById('btn-batal');
+        const btnExportWord = document.getElementById('btn-export-word');
+        const btnCaptureWajah = document.getElementById('btn-capture-wajah');
+        const btnManualOverride = document.getElementById('btn-manual-override');
+        const manualOverrideContainer = document.getElementById('manual-override-container');
+        
+        // Tables & Lists
+        const tabelDataSantri = document.getElementById('tabel-data-santri');
+        const listDataMasukHariIni = document.getElementById('list-data-masuk-hari-ini');
+        const listDataPulangHariIni = document.getElementById('list-data-pulang-hari-ini');
+        const tabelRekapanMasuk = document.getElementById('tabel-rekapan-masuk');
+        const tabelRekapanPulang = document.getElementById('tabel-rekapan-pulang');
+        
+        // Pengaturan
+        const pengaturanAkunForm = document.getElementById('pengaturan-akun-form');
+        const pengaturanJadwalForm = document.getElementById('pengaturan-jadwal-form');
+        const pengaturanSuaraForm = document.getElementById('pengaturan-suara-form');
+
+        // --- LOGIN & NAVIGATION ---
+        loginForm.addEventListener('submit', (e) => { 
+            e.preventDefault(); 
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            if (user === auth.username && pass === auth.password) {
+                loginPage.style.display = 'none'; 
+                appWrapper.style.display = 'block'; 
+                showPage('dashboard');
+                document.getElementById('setting-username').value = auth.username;
+                loadJadwalToSettings();
+                loadSuaraToSettings();
+            } else {
+                showInfoModal('Username atau Password salah!');
+            }
+        });
+        logoutBtn.addEventListener('click', (e) => { e.preventDefault(); appWrapper.style.display = 'none'; loginPage.style.display = 'block'; stopAllCameras(); });
+        
+        function showPage(pageId) {
+            const targetPage = document.getElementById(pageId + '-page');
+            if (!targetPage) {
+                console.error(`Error: Halaman dengan ID '${pageId}-page' tidak ditemukan.`);
+                return;
+            }
+
+            contentPages.forEach(p => p.classList.add('hidden'));
+            targetPage.classList.remove('hidden');
+
+            mainNav.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.remove('bg-gray-700');
+                if (l.getAttribute('href') === '#' + pageId) {
+                    l.classList.add('bg-gray-700');
+                }
+            });
+
+            clearInterval(clockInterval);
+            if (pageId === 'kamera') {
+                renderJadwalDisplay();
+                startAbsensiCamera();
+                updateLiveClock();
+                clockInterval = setInterval(updateLiveClock, 1000);
+            } else if (pageId === 'rekapan') {
+                renderRekapan();
+            }
+            else {
+                stopAllCameras();
+            }
+        }
+
+        mainNav.addEventListener('click', (e) => {
+            const link = e.target.closest('.nav-link');
+            if (link) {
+                e.preventDefault();
+                const pageId = link.getAttribute('href').substring(1);
+                if (pageId) {
+                    showPage(pageId);
+                }
+            }
+        });
+        
+        // --- MODAL CONTROLS ---
+        function openSantriModal(mode = 'add', santri = null) {
+            santriForm.reset();
+            viewRekamWajah.classList.add('hidden');
+            viewFormSantri.classList.remove('hidden');
+            document.getElementById('modal-title').textContent = mode === 'add' ? 'Tambah Santri Baru' : 'Edit Data Santri';
+            if (mode === 'edit' && santri) {
+                document.getElementById('santri-id').value = santri.id;
+                document.getElementById('santri-nama').value = santri.nama;
+                document.getElementById('santri-alamat').value = santri.alamat;
+                document.getElementById('santri-jenjang').value = santri.jenjang;
+                document.getElementById('santri-kelas').value = santri.kelas;
+            }
+            santriModal.style.display = 'flex';
+        }
+        function closeSantriModal() { santriModal.style.display = 'none'; stopAllCameras(); }
+        
+        function showInfoModal(message, onConfirm = null) {
+            document.getElementById('info-modal-text').textContent = message;
+            const buttonsContainer = document.getElementById('info-modal-buttons');
+            buttonsContainer.innerHTML = '';
+            if (onConfirm) {
+                const confirmBtn = document.createElement('button');
+                confirmBtn.textContent = 'Ya, Hapus';
+                confirmBtn.className = 'px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 mr-2';
+                confirmBtn.onclick = () => { onConfirm(); infoModal.style.display = 'none'; };
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = 'Batal';
+                cancelBtn.className = 'px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400';
+                cancelBtn.onclick = () => { infoModal.style.display = 'none'; };
+                
+                buttonsContainer.append(confirmBtn, cancelBtn);
+            } else {
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = 'Tutup';
+                closeBtn.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700';
+                closeBtn.onclick = () => { infoModal.style.display = 'none'; };
+                buttonsContainer.append(closeBtn);
+            }
+            infoModal.style.display = 'flex';
+        }
+
+        btnTambahSantri.addEventListener('click', () => openSantriModal('add'));
+        btnBatal.addEventListener('click', closeSantriModal);
+
+        // --- CRUD & REKAM WAJAH ---
+        santriForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            tempSantri = {
+                id: document.getElementById('santri-id').value || Date.now(),
+                nama: document.getElementById('santri-nama').value,
+                alamat: document.getElementById('santri-alamat').value,
+                jenjang: document.getElementById('santri-jenjang').value,
+                kelas: document.getElementById('santri-kelas').value,
+            };
+            viewFormSantri.classList.add('hidden');
+            viewRekamWajah.classList.remove('hidden');
+            document.getElementById('rekam-nama-santri').textContent = tempSantri.nama;
+            startRekamCamera();
+        });
+
+        btnCaptureWajah.addEventListener('click', () => {
+            const existingSantriIndex = santriData.findIndex(s => s.id == tempSantri.id);
+            tempSantri.wajahDirekam = true;
+
+            if (existingSantriIndex > -1) { // Edit mode
+                santriData[existingSantriIndex] = tempSantri;
+            } else { // Add mode
+                santriData.push(tempSantri);
+            }
+            
+            renderSantriTable();
+            updateDashboardStats();
+            closeSantriModal();
+            showInfoModal(`Wajah untuk ${tempSantri.nama} berhasil direkam!`);
+        });
+
+        tabelDataSantri.addEventListener('click', (e) => {
+            const target = e.target;
+            const santriId = target.closest('tr').dataset.id;
+            if (!santriId) return;
+
+            if (target.classList.contains('btn-edit')) {
+                const santri = santriData.find(s => s.id == santriId);
+                openSantriModal('edit', santri);
+            }
+            if (target.classList.contains('btn-hapus')) {
+                showInfoModal('Apakah Anda yakin ingin menghapus data santri ini?', () => {
+                    santriData = santriData.filter(s => s.id != santriId);
+                    renderSantriTable();
+                    updateDashboardStats();
+                });
+            }
+        });
+
+        // --- RENDER FUNCTIONS ---
+        function renderSantriTable() {
+            tabelDataSantri.innerHTML = '';
+            if (santriData.length === 0) {
+                tabelDataSantri.innerHTML = `<tr id="placeholder-data-santri"><td colspan="6" class="text-center py-10 text-gray-500">Belum ada data santri.</td></tr>`;
+                return;
+            }
+            santriData.forEach(s => {
+                const statusWajah = s.wajahDirekam 
+                    ? `<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Ya</span>` 
+                    : `<span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Belum</span>`;
+                const row = `
+                    <tr data-id="${s.id}" class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">${s.nama}</td>
+                        <td class="px-6 py-4">${s.alamat}</td>
+                        <td class="px-6 py-4">${s.jenjang}</td>
+                        <td class="px-6 py-4">${s.kelas}</td>
+                        <td class="px-6 py-4">${statusWajah}</td>
+                        <td class="px-6 py-4 flex space-x-2"><button class="btn-edit text-yellow-600 hover:underline">Edit</button><button class="btn-hapus text-red-600 hover:underline">Hapus</button></td>
+                    </tr>`;
+                tabelDataSantri.insertAdjacentHTML('beforeend', row);
+            });
+        }
+        
+        function renderAbsensi() {
+            listDataMasukHariIni.innerHTML = '';
+            listDataPulangHariIni.innerHTML = '';
+            
+            const dataMasuk = absensiData.filter(a => a.jamMasuk);
+            const dataPulang = absensiData.filter(a => a.jamPulang);
+
+            if (dataMasuk.length === 0) {
+                listDataMasukHariIni.innerHTML = `<p class="placeholder-text text-gray-500 text-center pt-8">Belum ada data absensi masuk.</p>`;
+            } else {
+                dataMasuk.forEach(a => {
+                    const statusIcon = a.statusMasuk === 'Tepat Waktu' ? '✅' : '⚠️';
+                    listDataMasukHariIni.insertAdjacentHTML('beforeend', `<div class="flex items-center p-2 rounded-md hover:bg-gray-100">${statusIcon} ${a.nama} - Masuk: ${a.jamMasuk} (${a.statusMasuk})</div>`);
+                });
+            }
+
+            if (dataPulang.length === 0) {
+                listDataPulangHariIni.innerHTML = `<p class="placeholder-text text-gray-500 text-center pt-8">Belum ada data absensi pulang.</p>`;
+            } else {
+                 dataPulang.forEach(a => {
+                    const statusIcon = a.statusPulang === 'Tepat Waktu' ? '✅' : '⚠️';
+                    listDataPulangHariIni.insertAdjacentHTML('beforeend', `<div class="flex items-center p-2 rounded-md hover:bg-gray-100">${statusIcon} ${a.nama} - Pulang: ${a.jamPulang} (${a.statusPulang})</div>`);
+                });
+            }
+        }
+
+        function renderRekapan() {
+            tabelRekapanMasuk.innerHTML = '';
+            tabelRekapanPulang.innerHTML = '';
+            const today = new Date().toLocaleDateString('id-ID');
+
+            // Logic for ALPA
+            const santriAbsenMasuk = absensiData.map(a => a.id);
+            const santriAlpa = santriData.filter(s => !santriAbsenMasuk.includes(s.id));
+
+            const allRecapData = [...absensiData, ...santriAlpa.map(s => ({
+                id: s.id,
+                nama: s.nama,
+                tanggal: today,
+                jamMasuk: null,
+                statusMasuk: 'Alpa'
+            }))];
+
+            if (allRecapData.length === 0) {
+                tabelRekapanMasuk.innerHTML = `<tr class="placeholder-rekapan"><td colspan="5" class="text-center py-10 text-gray-500">Belum ada data rekapan.</td></tr>`;
+                tabelRekapanPulang.innerHTML = `<tr class="placeholder-rekapan"><td colspan="4" class="text-center py-10 text-gray-500">Belum ada data rekapan.</td></tr>`;
+                return;
+            }
+
+            allRecapData.forEach(a => {
+                const statusClass = a.statusMasuk === 'Tepat Waktu' ? 'bg-green-100 text-green-800' : (a.statusMasuk === 'Terlambat' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
+                tabelRekapanMasuk.insertAdjacentHTML('beforeend', `<tr class="bg-white border-b"><td class="px-6 py-4">${a.nama}</td><td class="px-6 py-4">${a.tanggal}</td><td class="px-6 py-4">${a.jamMasuk || '--:--'}</td><td class="px-6 py-4"><span class="${statusClass} text-xs font-medium px-2.5 py-0.5 rounded">${a.statusMasuk}</span></td><td class="px-6 py-4">${a.statusMasuk === 'Alpa' ? 'Tidak Hadir' : 'Hadir'}</td></tr>`);
+                if(a.jamPulang) {
+                    const statusPulangClass = a.statusPulang === 'Tepat Waktu' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                    tabelRekapanPulang.insertAdjacentHTML('beforeend', `<tr class="bg-white border-b"><td class="px-6 py-4">${a.nama}</td><td class="px-6 py-4">${a.tanggal}</td><td class="px-6 py-4">${a.jamPulang}</td><td class="px-6 py-4"><span class="${statusPulangClass} text-xs font-medium px-2.5 py-0.5 rounded">${a.statusPulang}</span></td></tr>`);
+                }
+            });
+        }
+        
+        function updateDashboardStats() {
+            const totalSantri = santriData.length;
+            const sudahAbsen = absensiData.filter(a => a.jamMasuk).length;
+            const terlambat = absensiData.filter(a => a.statusMasuk === 'Terlambat').length;
+            const tidakHadir = totalSantri - sudahAbsen;
+            document.getElementById('stat-total-santri').textContent = totalSantri;
+            document.getElementById('stat-sudah-absen').textContent = sudahAbsen;
+            document.getElementById('stat-terlambat').textContent = terlambat;
+            document.getElementById('stat-tidak-hadir').textContent = tidakHadir;
+        }
+        
+        function renderJadwalDisplay() {
+            const formatTime = (h, m) => `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            document.getElementById('jadwal-masuk-text').textContent = `${formatTime(JADWAL_ABSEN.masuk.start.h, JADWAL_ABSEN.masuk.start.m)} - ${formatTime(JADWAL_ABSEN.masuk.end.h, JADWAL_ABSEN.masuk.end.m)}`;
+            document.getElementById('jadwal-masuk-terlambat-text').textContent = formatTime(JADWAL_ABSEN.masuk.late_end.h, JADWAL_ABSEN.masuk.late_end.m);
+            document.getElementById('jadwal-pulang-text').textContent = `${formatTime(JADWAL_ABSEN.pulang.start.h, JADWAL_ABSEN.pulang.start.m)} - ${formatTime(JADWAL_ABSEN.pulang.end.h, JADWAL_ABSEN.pulang.end.m)}`;
+            document.getElementById('jadwal-pulang-terlambat-text').textContent = formatTime(JADWAL_ABSEN.pulang.late_end.h, JADWAL_ABSEN.pulang.late_end.m);
+        }
+
+        // --- ABSENSI LOGIC ---
+        function prosesAbsensi(santri, isTest = false) {
+            const statusText = document.getElementById('status-text');
+            if (!santri || !santri.wajahDirekam) {
+                statusText.textContent = UCAPAN_SUARA.gagal;
+                return;
+            }
+
+            const now = new Date();
+            const today = now.toLocaleDateString('id-ID');
+            const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const absenHariIni = absensiData.find(a => a.id === santri.id && a.tanggal === today);
+            const mode = document.querySelector('.tab-button.active').id;
+            const timeStatus = checkAbsensiTime();
+            
+            let pesanSuara, pesanTampilan;
+
+            if (mode === 'tab-masuk') {
+                if (absenHariIni) {
+                    pesanSuara = UCAPAN_SUARA.sudahAbsen.replace('{nama}', santri.nama);
+                    pesanTampilan = `ℹ️ ${santri.nama} sudah melakukan absensi masuk hari ini.`;
+                } else if (timeStatus.isAfterMasukLateEnd) {
+                    pesanSuara = UCAPAN_SUARA.alpa.replace('{nama}', santri.nama);
+                    pesanTampilan = `🚫 ${santri.nama} dianggap ALPA karena absen di luar jam toleransi.`;
+                } else {
+                    const statusMasuk = timeStatus.isMasukLate ? 'Terlambat' : 'Tepat Waktu';
+                    if (!isTest) {
+                        absensiData.push({ id: santri.id, nama: santri.nama, tanggal: today, jamMasuk: jam, jamPulang: null, statusMasuk: statusMasuk, statusPulang: null });
+                    }
+                    pesanSuara = (statusMasuk === 'Tepat Waktu' ? UCAPAN_SUARA.tepatWaktu : UCAPAN_SUARA.terlambat).replace('{nama}', santri.nama);
+                    pesanTampilan = `${statusMasuk === 'Tepat Waktu' ? '✅' : '⚠️'} ${santri.nama} berhasil absen masuk (${statusMasuk}).`;
+                }
+            } else if (mode === 'tab-pulang') {
+                if (!absenHariIni) {
+                    pesanTampilan = `ℹ️ ${santri.nama} belum melakukan absensi masuk hari ini.`;
+                } else if (absenHariIni.jamPulang) {
+                    pesanSuara = UCAPAN_SUARA.sudahAbsen.replace('{nama}', santri.nama);
+                    pesanTampilan = `ℹ️ ${santri.nama} sudah melakukan absensi pulang hari ini.`;
+                } else if (timeStatus.isAfterPulangLateEnd) {
+                     pesanSuara = UCAPAN_SUARA.alpa.replace('{nama}', santri.nama);
+                    pesanTampilan = `🚫 ${santri.nama} dianggap ALPA karena absen di luar jam toleransi.`;
+                } else {
+                    const statusPulang = timeStatus.isPulangLate ? 'Terlambat' : 'Tepat Waktu';
+                    if (!isTest) {
+                        absenHariIni.jamPulang = jam;
+                        absenHariIni.statusPulang = statusPulang;
+                    }
+                    pesanSuara = (statusPulang === 'Tepat Waktu' ? UCAPAN_SUARA.pulang : UCAPAN_SUARA.pulangTelat).replace('{nama}', santri.nama);
+                    pesanTampilan = `${statusPulang === 'Tepat Waktu' ? '👋' : '⚠️'} ${santri.nama} berhasil absen pulang (${statusPulang}).`;
+                }
+            }
+
+            statusText.textContent = pesanTampilan;
+            if (pesanSuara && 'speechSynthesis' in window) {
+                const ucapan = new SpeechSynthesisUtterance(pesanSuara);
+                ucapan.lang = 'id-ID';
+                ucapan.voice = selectedVoice;
+                ucapan.rate = 0.9;
+                speechSynthesis.speak(ucapan);
+            }
+            if (!isTest) {
+                renderAbsensi();
+                updateDashboardStats();
+            }
+        }
+        
+        // --- PENGATURAN LOGIC ---
+        function loadJadwalToSettings() {
+            const formatTime = (h, m) => `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            document.getElementById('setting-masuk-start').value = formatTime(JADWAL_ABSEN.masuk.start.h, JADWAL_ABSEN.masuk.start.m);
+            document.getElementById('setting-masuk-end').value = formatTime(JADWAL_ABSEN.masuk.end.h, JADWAL_ABSEN.masuk.end.m);
+            document.getElementById('setting-masuk-late-end').value = formatTime(JADWAL_ABSEN.masuk.late_end.h, JADWAL_ABSEN.masuk.late_end.m);
+            document.getElementById('setting-pulang-start').value = formatTime(JADWAL_ABSEN.pulang.start.h, JADWAL_ABSEN.pulang.start.m);
+            document.getElementById('setting-pulang-end').value = formatTime(JADWAL_ABSEN.pulang.end.h, JADWAL_ABSEN.pulang.end.m);
+            document.getElementById('setting-pulang-late-end').value = formatTime(JADWAL_ABSEN.pulang.late_end.h, JADWAL_ABSEN.pulang.late_end.m);
+        }
+
+        pengaturanAkunForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('setting-username').value;
+            const oldPass = document.getElementById('setting-old-password').value;
+            const newPass = document.getElementById('setting-new-password').value;
+
+            if (oldPass !== auth.password) {
+                showInfoModal('Password lama yang Anda masukkan salah!');
+                return;
+            }
+
+            auth.username = username;
+            if (newPass) {
+                auth.password = newPass;
+            }
+            showInfoModal('Data akun berhasil diperbarui!');
+            document.getElementById('setting-old-password').value = '';
+            document.getElementById('setting-new-password').value = '';
+        });
+        
+        pengaturanJadwalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const [masukStartH, masukStartM] = document.getElementById('setting-masuk-start').value.split(':');
+            const [masukEndH, masukEndM] = document.getElementById('setting-masuk-end').value.split(':');
+            const [masukLateEndH, masukLateEndM] = document.getElementById('setting-masuk-late-end').value.split(':');
+            const [pulangStartH, pulangStartM] = document.getElementById('setting-pulang-start').value.split(':');
+            const [pulangEndH, pulangEndM] = document.getElementById('setting-pulang-end').value.split(':');
+            const [pulangLateEndH, pulangLateEndM] = document.getElementById('setting-pulang-late-end').value.split(':');
+
+            JADWAL_ABSEN.masuk.start = { h: parseInt(masukStartH), m: parseInt(masukStartM) };
+            JADWAL_ABSEN.masuk.end = { h: parseInt(masukEndH), m: parseInt(masukEndM) };
+            JADWAL_ABSEN.masuk.late_end = { h: parseInt(masukLateEndH), m: parseInt(masukLateEndM) };
+            JADWAL_ABSEN.pulang.start = { h: parseInt(pulangStartH), m: parseInt(pulangStartM) };
+            JADWAL_ABSEN.pulang.end = { h: parseInt(pulangEndH), m: parseInt(pulangEndM) };
+            JADWAL_ABSEN.pulang.late_end = { h: parseInt(pulangLateEndH), m: parseInt(pulangLateEndM) };
+
+            showInfoModal('Jadwal absensi berhasil diperbarui!');
+            renderJadwalDisplay();
+            
+            if (document.getElementById('kamera-page').classList.contains('active')) {
+                startAbsensiCamera();
+            }
+        });
+
+        // --- MISC BUTTONS & TABS ---
+        btnExportWord.addEventListener('click', () => {
+            if (absensiData.length === 0) {
+                showInfoModal('Tidak ada data rekapan untuk diexport.');
+                return;
+            }
+            const tableBodyHtml = tabelRekapanMasuk.innerHTML;
+            let content = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head><meta charset='utf-8'><title>Rekapan Absensi</title></head>
+                <body>
+                    <h2>Rekapan Absensi Santri</h2>
+                    <p>Pondok Pesantren Al Ikhlas Firqoh Al Bisri</p>
+                    <table border="1" style="border-collapse:collapse; width:100%;">
+                        <thead>
+                            <tr>
+                                <th>Nama Santri</th>
+                                <th>Tanggal</th>
+                                <th>Jam Masuk</th>
+                                <th>Status Masuk</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableBodyHtml}</tbody>
+                    </table>
+                </body>
+                </html>`;
+            
+            const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'rekapan-absensi.doc';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+        
+        [tabMasuk, tabPulang].forEach(tab => {
+            tab.addEventListener('click', () => {
+                const isMasukActive = tab.id === 'tab-masuk';
+                [tabMasuk, tabPulang].forEach(t => {
+                    t.classList.remove('active', 'bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+                    t.classList.add('bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+                });
+                tab.classList.add('active');
+                tab.classList.remove('bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+                
+                pintuTitle.textContent = isMasukActive ? 'PINTU MASUK' : 'PINTU PULANG';
+                startAbsensiCamera();
+            });
+        });
+
+        // --- CAMERA & TIME LOGIC ---
+        function checkAbsensiTime() {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            
+            const masukStart = JADWAL_ABSEN.masuk.start.h * 60 + JADWAL_ABSEN.masuk.start.m;
+            const masukEnd = JADWAL_ABSEN.masuk.end.h * 60 + JADWAL_ABSEN.masuk.end.m;
+            const masukLateEnd = JADWAL_ABSEN.masuk.late_end.h * 60 + JADWAL_ABSEN.masuk.late_end.m;
+            
+            const pulangStart = JADWAL_ABSEN.pulang.start.h * 60 + JADWAL_ABSEN.pulang.start.m;
+            const pulangEnd = JADWAL_ABSEN.pulang.end.h * 60 + JADWAL_ABSEN.pulang.end.m;
+            const pulangLateEnd = JADWAL_ABSEN.pulang.late_end.h * 60 + JADWAL_ABSEN.pulang.late_end.m;
+
+            return {
+                isMasukTime: currentTime >= masukStart && currentTime <= masukEnd,
+                isMasukLate: currentTime > masukEnd && currentTime <= masukLateEnd,
+                isAfterMasukLateEnd: currentTime > masukLateEnd,
+                isPulangTime: currentTime >= pulangStart && currentTime <= pulangEnd,
+                isPulangLate: currentTime > pulangEnd && currentTime <= pulangLateEnd,
+                isAfterPulangLateEnd: currentTime > pulangLateEnd,
+            };
+        }
+
+        let activeStream = null;
+        async function startCamera(videoElement) {
+            if (activeStream && videoElement.srcObject === activeStream) {
+                return true;
+            }
+            stopAllCameras(true);
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                    videoElement.srcObject = activeStream;
+                    return true;
+                } catch (error) { console.error('Error accessing camera:', error); return false; }
+            }
+            return false;
+        }
+        
+        function startDetectionLoop(isManual = false) {
+            const statusText = document.getElementById('status-text');
+            clearInterval(absensiInterval);
+            
+            let i = 0;
+            statusText.textContent = isManual ? 'Tes manual aktif, mendeteksi wajah...' : 'Mendeteksi wajah...';
+            
+            absensiInterval = setInterval(() => {
+                const santriDirekam = santriData.filter(s => s.wajahDirekam);
+                if (santriDirekam.length === 0) {
+                    statusText.textContent = 'Tidak ada santri dengan wajah terekam untuk dideteksi.';
+                    clearInterval(absensiInterval);
+                    return;
+                }
+                
+                if (Math.random() < 0.5) {
+                    statusText.textContent = 'Tidak ada wajah terdeteksi.';
+                    return;
+                }
+
+                const detectedSantri = santriDirekam[i % santriDirekam.length];
+                statusText.textContent = `Wajah terdeteksi: ${detectedSantri.nama}. Memproses...`;
+                setTimeout(() => prosesAbsensi(detectedSantri, isManual), 1000);
+                i++;
+            }, 3000);
+        }
+
+        async function startAbsensiCamera() {
+            const statusText = document.getElementById('status-text');
+            const activeTabId = document.querySelector('.tab-button.active').id;
+            
+            if (!await startCamera(kameraAbsen)) {
+                statusText.textContent = 'Gagal mengakses kamera.';
+                return;
+            }
+            
+            clearInterval(absensiInterval);
+            manualOverrideContainer.classList.add('hidden');
+
+            const timeStatus = checkAbsensiTime();
+            let isAbsensiOpen = false;
+            
+            if (activeTabId === 'tab-masuk' && (timeStatus.isMasukTime || timeStatus.isMasukLate)) {
+                isAbsensiOpen = true;
+            }
+            if (activeTabId === 'tab-pulang' && (timeStatus.isPulangTime || timeStatus.isPulangLate)) {
+                 isAbsensiOpen = true;
+            }
+
+            if (isAbsensiOpen) {
+                startDetectionLoop(false);
+            } else {
+                statusText.textContent = 'Waktu absensi belum dimulai atau sudah berakhir.';
+                manualOverrideContainer.classList.remove('hidden');
+            }
+        }
+
+        async function startRekamCamera() {
+            if (!await startCamera(kameraRekam)) {
+                showInfoModal('Gagal mengakses kamera. Mohon berikan izin.');
+                closeSantriModal();
+            }
+        }
+
+        function stopAllCameras(keepFeed = false) {
+            clearInterval(absensiInterval);
+            if (activeStream && !keepFeed) {
+                activeStream.getTracks().forEach(track => track.stop());
+                activeStream = null;
+            }
+        }
+
+        btnManualOverride.addEventListener('click', () => {
+            if (absensiInterval) {
+                clearInterval(absensiInterval);
+                absensiInterval = null;
+                document.getElementById('status-text').textContent = 'Tes manual dihentikan.';
+                btnManualOverride.textContent = 'Test Kamera (Manual)';
+                btnManualOverride.classList.remove('bg-red-500', 'hover:bg-red-600');
+                btnManualOverride.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+            } else {
+                startDetectionLoop(true);
+                btnManualOverride.textContent = 'Hentikan Tes Manual';
+                btnManualOverride.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                btnManualOverride.classList.add('bg-red-500', 'hover:bg-red-600');
+            }
+        });
+        
+        // --- INITIAL RENDER & CLOCKS ---
+        function updateWaktu() {
+            const sekarang = new Date();
+            const opsi = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('tanggal-hari-ini').innerText = sekarang.toLocaleDateString('id-ID', opsi) + ' WIB';
+        }
+        updateWaktu();
+        setInterval(updateWaktu, 60000);
+
+        function updateLiveClock() {
+            const sekarang = new Date();
+            const opsi = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const clockElement = document.getElementById('live-clock');
+            if (clockElement) {
+                clockElement.innerText = sekarang.toLocaleDateString('id-ID', opsi) + ' WIB';
+            }
+        }
+    });
+    </script>
+</body>
+</html>
